@@ -1,3 +1,4 @@
+// tratando as excecoes 
 class ExtendableError extends Error {
     constructor(message) {
         super();
@@ -5,8 +6,6 @@ class ExtendableError extends Error {
         this.stack = (new Error()).stack;
     }
 }
-
-// now I can extend
 
 class MyError extends ExtendableError {
     constructor(m, status = 500) {

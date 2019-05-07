@@ -3,42 +3,55 @@ const sharp = require('sharp');
 
 const MyError = require('./../erros/MyError');
 
+/*
+    compressImage
+        file: arquivo que sera modificado
+        size: tamanho do arquivo
+        filename: nome que sera atribuido ao novo arquivo comprimido
+*/
 exports.compressImage = async (file, size, filename) => {
-    
+    // local e nome do arquivo que sera gerado a imagem comprimida
     const newPath = `${file.destination}\\${filename}` + '.webp';
 
-    return await sharp(file.path)
-        .resize(size)
+    return await sharp(file.path) // origem do arquivo
+        // tamanho do arquivo 
+        .resize(size) 
+        // forcar formato
         .toFormat('webp')
+        // configuracao do formato
         .webp({
+            // qualidade que ira ser gerado o arquivo
             quality: 80
         })
+        // escreve a saida para um buffer
         .toBuffer()
+        // caso ocorra tudo certo
         .then(data => {
-            // Deletando o arquivo antigo
-            // O fs.acess serve para testar se o arquivo realmente existe, evitando bugs
+            // verifica se o arquivo existe
             fs.access(file.path, (err) => {
-                // Um erro significa que a o arquivo não existe, então não tentamos apagar
+                // se o arquivo nao existe retorna um erro
                 if (!err) {
-                    //Se não houve erros, tentamos apagar
+                    // apaga o arquivo
                     fs.unlink(file.path, err => {
-                        // Não quero que erros aqui parem todo o sistema, então só vou imprimir o erro, sem throw.
+                        // caso nao consiga apagar retorna um erro
                         if (err) throw new MyError(err);
                     })
                 }
             });
-            //Agora vamos armazenar esse buffer no novo caminho
+            // escrever arquivo no novo caminho criado
             fs.writeFile(newPath, data, err => {
-                
+                // verifica se existe erro
                 if (err) {
-                    // Já aqui um erro significa que o upload falhou, então é importante que o usuário saiba.
+                    // caso haja um erro ao salvar o novo arquivo sera gerado um erro
                     throw new MyError(err);
                 }
             });
-            // Se o código chegou até aqui, deu tudo certo, então vamos retornar o novo caminho
+            // retorna o caminho caso tenha ocorrido tudo OK
             return newPath;
         })
+        // caso haja uma excecao
         .catch(err => {
+            // gera outros tipos de excecoes
             throw new MyError(err.message);
         })
 }
